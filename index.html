@@ -372,3 +372,892 @@ label { font-size:12px; color:var(--muted); margin-bottom:4px; display:block; }
       </div>
       <div class="divider"></div>
     
+<div style="margin-top:16px;">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">VEYA KRONOMETREYLE ÖLÇÜN</div>
+        <div class="timer-display" id="timer-display">00:00:00</div>
+        <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;">
+          <button class="btn btn-primary" id="timer-start-btn" onclick="toggleTimer()">▶ Başlat</button>
+          <button class="btn btn-ghost" onclick="resetTimer()">↺ Sıfırla</button>
+          <button class="btn btn-primary" id="timer-save-btn" style="display:none;" onclick="saveTimerLog()">💾 Kaydet</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">📅 Bugünkü Çalışmalar</div>
+      <div id="today-total" style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--accent);margin-bottom:16px;">0 dakika</div>
+      <ul class="study-log" id="study-log-list"></ul>
+      <div class="divider"></div>
+      <div class="section-title" style="margin-top:16px;">📊 Bu Hafta Ders Dağılımı</div>
+      <div id="weekly-breakdown"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ÜNİVERSİTE -->
+<div class="page" id="page-university">
+  <div class="page-header">
+    <h2>Hedef Üniversite 🎓</h2>
+    <p>Hedef üniversite ve bölümünü seç</p>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="section-title">🔍 Üniversite Ara</div>
+      <div class="uni-search-box" style="position:relative;">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="uni-search" placeholder="Üniversite adı yazın..." style="width:100%;" oninput="searchUni(this.value)" autocomplete="off">
+        <div id="uni-suggestions" class="suggestions" style="display:none;"></div>
+      </div>
+      <div id="selected-uni-display"></div>
+      <div id="dept-list" style="display:none;">
+        <div class="section-title" style="margin-top:16px;">📋 Bölümler</div>
+        <div style="margin-bottom:10px;"><input type="text" id="dept-filter" placeholder="Bölüm ara..." style="width:100%;" oninput="filterDepts(this.value)"></div>
+        <div id="dept-items" style="max-height:350px;overflow-y:auto;"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">🎯 Seçilen Hedefler</div>
+      <div id="goals-list"><div class="empty-state"><div class="es-icon">🎯</div><div>Henüz hedef eklenmedi</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- MOTİVASYON -->
+<div class="page" id="page-motivation">
+  <div class="page-header">
+    <h2>Motivasyon 🔥</h2>
+    <p>Yorulduğunda buraya gel</p>
+  </div>
+  <div class="motive-card" id="daily-quote">
+    <div style="font-size:36px;margin-bottom:12px;">✨</div>
+    <div class="motive-quote" id="quote-text"></div>
+    <div class="motive-author" id="quote-author"></div>
+    <button class="btn btn-ghost btn-sm" style="margin-top:16px;" onclick="nextQuote()">Başka Söz ↻</button>
+  </div>
+  <div class="motive-grid">
+    <div class="motive-tip"><div class="tip-icon">🧠</div><h4>Pomodoro Tekniği</h4><p>25 dakika odaklan, 5 dakika mola ver. 4 pomodoro sonra 15-30 dakika uzun mola.</p></div>
+    <div class="motive-tip"><div class="tip-icon">😴</div><h4>Uyku Çok Önemli</h4><p>Gece 7-8 saat uyku, beyninin öğrendiği her şeyi hafızaya alması için şarttır.</p></div>
+    <div class="motive-tip"><div class="tip-icon">📖</div><h4>Aktif Tekrar</h4><p>Okuduğunu kapalı deftere özetle. Sadece okumak yeterli değil; uygula ve anlat.</p></div>
+    <div class="motive-tip"><div class="tip-icon">🎯</div><h4>Günlük Hedef Koy</h4><p>Her sabah o gün yapacaklarını yaz. Küçük ve ulaşılabilir hedefler motivasyonu artırır.</p></div>
+    <div class="motive-tip"><div class="tip-icon">💧</div><h4>Su İç, Hareket Et</h4><p>Günde 2 litre su ve hafif yürüyüş, beyin performansını ciddi ölçüde artırır.</p></div>
+    <div class="motive-tip"><div class="tip-icon">📵</div><h4>Telefonu Bırak</h4><p>Çalışırken telefonu başka odaya koy. Her bildirim dikkatin 23 dakika bozulmasına neden olur.</p></div>
+  </div>
+  <div style="margin-top:24px;" class="card">
+    <div class="section-title">📈 İlerleme Grafiği</div>
+    <div id="progress-chart" style="padding:12px 0;"></div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+// ===================== VERİ =====================
+const TOPICS = {
+  TYT: {
+    "Türkçe": {
+      icon:"📖", color:"color-turkce", bg:"bg-turkce",
+      topics:[
+        {name:"Sözcükte Anlam", subs:["Gerçek-Mecaz Anlam","Yan Anlam","Terim Anlam","Deyim ve Atasözü","Eş Anlam","Zıt Anlam","Sesteş Sözcükler"]},
+        {name:"Cümlede Anlam", subs:["Öznel-Nesnel Yargı","Neden-Sonuç","Amaç-Koşul","Karşılaştırma","Benzetme","Abartma"]},
+        {name:"Sözcük Türleri", subs:["İsimler","Sıfatlar","Zamirler","Zarflar","Edat-Bağlaç-Ünlem","Fiiller"]},
+        {name:"Cümlenin Ögeleri", subs:["Özne","Yüklem","Nesne","Yer Tamlayıcısı","Zarf Tümleci"]},
+        {name:"Cümle Türleri", subs:["Yapısına Göre Cümleler","Yüklemin Türüne Göre","Anlamına Göre Cümleler"]},
+        {name:"Fiil Çekimi", subs:["Kip Ekleri","Kişi Ekleri","Olumsuz Çekim","Soru Çekimi"]},
+        {name:"Fiilimsi", subs:["İsim-Fiil","Sıfat-Fiil","Zarf-Fiil"]},
+        {name:"Yazım Kuralları", subs:["Büyük Harf","Bitişik-Ayrı Yazım","Sayıların Yazımı","Kısaltmalar"]},
+        {name:"Noktalama İşaretleri", subs:["Nokta-Virgül","Soru-Ünlem","İki Nokta","Tırnak İşareti","Kısa Çizgi"]},
+        {name:"Ses Bilgisi", subs:["Ses Olayları","Hece-Ünlü Kuralları","Ünsüz Benzeşmesi-Yumuşaması"]},
+        {name:"Paragraf", subs:["Ana Düşünce","Yardımcı Düşünce","Başlık Bulma","Boşluk Doldurma","Sıralama"]},
+        {name:"Anlatım Biçimleri", subs:["Açıklama","Tartışma","Betimleme","Öyküleme"]},
+        {name:"Metin Türleri", subs:["Makale","Fıkra","Deneme","Sohbet","Eleştiri","Röportaj","Anı","Günlük","Mektup"]}
+      ]
+    },
+    "Matematik": {
+      icon:"🔢", color:"color-matematik", bg:"bg-matematik",
+      topics:[
+        {name:"Temel Kavramlar", subs:["Sayı Kümeleri","Mutlak Değer","Üslü Sayılar","Köklü Sayılar","Çarpanlar-Katlar","OBEB-OKEK"]},
+        {name:"Sayı Sistemleri", subs:["Doğal Sayılar","Tam Sayılar","Rasyonel Sayılar","Gerçek Sayılar"]},
+        {name:"Oran ve Orantı", subs:["Oran","Doğru Orantı","Ters Orantı","Denklem Kurma"]},
+        {name:"Yüzdeler ve Faiz", subs:["Yüzde Hesabı","Basit Faiz","Bileşik Faiz","Kar-Zarar"]},
+        {name:"Birinci Dereceden Denklemler", subs:["Tek Bilinmeyenli","İki Bilinmeyenli","Eşitsizlikler"]},
+        {name:"İkinci Dereceden Denklemler", subs:["Kökler","Diskriminant","Vieta Formülleri","Parabol"]},
+        {name:"Fonksiyonlar", subs:["Tanım","Bire Bir-Örten","Bileşke","Ters Fonksiyon"]},
+        {name:"Polinomlar", subs:["Toplama-Çıkarma","Çarpma-Bölme","Özdeşlik","Kalan Teoremi"]},
+        {name:"Olasılık", subs:["Temel Kavramlar","Permütasyon","Kombinasyon","Binom","Klasik Olasılık"]},
+        {name:"İstatistik", subs:["Ortalama","Medyan-Mod","Standart Sapma","Grafik Yorumlama"]},
+        {name:"Kümeler", subs:["Küme Kavramı","Küme İşlemleri","Kartezyen Çarpım","Sayma"]},
+        {name:"Mantık", subs:["Önerme","Bağlaçlar","Doğruluk Tablosu","Niceleyiciler"]},
+        {name:"Geometri Temelleri", subs:["Açılar","Üçgenler","Özel Üçgenler","Dörtgenler","Çember"]},
+        {name:"Analitik Geometri", subs:["Nokta-Doğru","Doğrunun Denklemi","Çemberin Denklemi"]}
+      ]
+    },
+    "Fen Bilimleri": {
+      icon:"⚗️", color:"color-fen", bg:"bg-fen",
+      topics:[
+        {name:"Fizik – Kuvvet ve Hareket", subs:["Vektörler","Kuvvetler","Newton Yasaları","Sürtünme","Basit Makineler"]},
+        {name:"Fizik – Enerji", subs:["İş","Güç","Enerji","Potansiyel-Kinetik Enerji","Enerji Korunumu"]},
+        {name:"Fizik – Dalgalar", subs:["Dalga Kavramı","Ses Dalgaları","Işık","Optik"]},
+        {name:"Fizik – Elektrik", subs:["Elektrik Yükü","Ohm Yasası","Devreler","Manyetizma"]},
+        {name:"Fizik – Basınç", subs:["Katılarda Basınç","Sıvılarda Basınç","Archimedes","Gaz Basıncı"]},
+        {name:"Kimya – Atom ve Periyodik Tablo", subs:["Atom Modelleri","Periyodik Sistem","Elementler","Elektronik Yapı"]},
+        {name:"Kimya – Madde ve Özellikleri", subs:["Madde Sınıflandırma","Fiziksel-Kimyasal Değişim","Karışımlar","Saf Madde"]},
+        {name:"Kimya – Kimyasal Tepkimeler", subs:["Denklem Yazma","Mol Kavramı","Stokiyometri","Tepkime Türleri"]},
+        {name:"Kimya – Asit-Baz", subs:["Asit-Baz Tanımları","pH","Nötralizasyon","Tampon Çözeltiler"]},
+        {name:"Biyoloji – Hücre", subs:["Prokaryot-Ökaryot","Hücre Organelleri","Hücre Zarı","Osmoz-Difüzyon"]},
+        {name:"Biyoloji – Canlılar", subs:["Canlıların Sınıflandırılması","Bakteriler","Protistler","Mantarlar","Bitkiler","Hayvanlar"]},
+        {name:"Biyoloji – İnsan Fizyolojisi", subs:["Sindirim","Dolaşım","Solunum","Boşaltım","Sinir","Üreme"]},
+        {name:"Biyoloji – Kalıtım", subs:["Mendel Kalıtımı","Kan Grupları","Bağlı Kalıtım","DNA-Gen"]}
+      ]
+    },
+    "Sosyal Bilimler": {
+      icon:"🌍", color:"color-sosyal", bg:"bg-sosyal",
+      topics:[
+        {name:"Tarih – İlk Çağ", subs:["Tarih Öncesi Dönem","Mezopotamya","Mısır","Anadolu Uygarlıkları","Yunan-Roma"]},
+        {name:"Tarih – Orta Çağ", subs:["İslamiyet Öncesi Türkler","İslam Medeniyeti","Selçuklular","Haçlı Seferleri"]},
+        {name:"Tarih – Osmanlı", subs:["Kuruluş Dönemi","Yükselme Dönemi","Duraklama-Gerileme","Çözülme ve Reform","I.Dünya Savaşı"]},
+        {name:"Tarih – Türk İnkılabı", subs:["Kurtuluş Savaşı","Cumhuriyetin İlanı","Atatürk İlke ve İnkılapları","Çok Partili Hayat"]},
+        {name:"Tarih – Yeni ve Yakın Çağ", subs:["Fransız İhtilali","Sanayi Devrimi","Emperyalizm","II.Dünya Savaşı","Soğuk Savaş"]},
+        {name:"Coğrafya – Fiziki", subs:["Harita Bilgisi","Yer Şekilleri","İklimler","Su Kaynakları","Toprak"]},
+        {name:"Coğrafya – Beşeri", subs:["Nüfus","Yerleşme","Göç","Ekonomik Faaliyetler"]},
+        {name:"Coğrafya – Türkiye", subs:["Türkiye'nin Konumu","İklim","Hidrografya","Doğal Afetler","Bölgeler"]},
+        {name:"Coğrafya – Dünya", subs:["Kıtalar","Küreselleşme","Çevre Sorunları","Enerji Kaynakları"]},
+        {name:"Felsefe", subs:["Felsefeye Giriş","Varlık Felsefesi","Bilgi Felsefesi","Ahlak Felsefesi","Siyaset Felsefesi","Estetik"]},
+        {name:"Din Kültürü", subs:["İslam'ın Temel Kaynakları","İbadetler","Ahlak","Diğer Dinler","Laiklik"]}
+      ]
+    }
+  },
+  AYT: {
+    "Matematik": {
+      icon:"🔢", color:"color-matematik", bg:"bg-matematik",
+      topics:[
+        {name:"Fonksiyonlar", subs:["Fonksiyon Kavramı","Bileşke Fonksiyon","Ters Fonksiyon","Özel Fonksiyonlar"]},
+        {name:"Logaritma", subs:["Logaritma Tanımı","Logaritma Özellikleri","Logaritmik Denklemler","Logaritmik Eşitsizlikler"]},
+        {name:"Trigonometri", subs:["Trigonometrik Oran","Birim Çember","Sinüs-Kosinüs-Tanjant","Trigonometrik Denklemler","Toplam-Fark Formülleri"]},
+        {name:"Diziler", subs:["Aritmetik Dizi","Geometrik Dizi","Sonsuz Geometrik Dizi","Ardışık Sayılar"]},
+        {name:"Limit ve Süreklilik", subs:["Limit Kavramı","Limit Hesaplama","Özel Limitler","Süreklilik"]},
+        {name:"Türev", subs:["Türev Tanımı","Türev Kuralları","Bileşke-Ters Türev","Türevin Uygulamaları","Ekstremumlar"]},
+        {name:"İntegral", subs:["Belirsiz İntegral","Belirli İntegral","Alan-Hacim","İntegral Teknikleri"]},
+        {name:"Karmaşık Sayılar", subs:["Karmaşık Sayı Tanımı","İşlemler","Modül-Argüman","Polar Form"]},
+        {name:"Polinomlar (İleri)", subs:["Polinom İşlemleri","Köklerin Özellikleri","Rasyonel Kökler","Polinom Eşitsizlikleri"]},
+        {name:"Olasılık (İleri)", subs:["Koşullu Olasılık","Bağımsız Olaylar","Geometrik Olasılık","Beklenen Değer"]},
+        {name:"İstatistik (İleri)", subs:["Normal Dağılım","Hipotez Testi","Korelasyon","Regresyon"]}
+      ]
+    },
+    "Geometri": {
+      icon:"📐", color:"color-matematik", bg:"bg-matematik",
+      topics:[
+        {name:"Üçgenler", subs:["Üçgende Açılar","Alan Formülleri","Özel Üçgenler","Benzerlik","Pisagor"]},
+        {name:"Açı ve Çizgiler", subs:["Açı Türleri","Paralel Doğrular","Dikey-Yatay"]},
+        {name:"Çokgenler", subs:["Dörtgenler","Özel Dörtgenler","Alan Hesabı","Çevre"]},
+        {name:"Çember ve Daire", subs:["Temel Kavramlar","Çemberde Açılar","Teğet","Çemberin Alanı","Daire Dilimi"]},
+        {name:"Katı Cisimler", subs:["Prizma","Piramit","Silindir","Koni","Küre","Hacim-Yüzey Alan"]},
+        {name:"Dönüşüm Geometrisi", subs:["Ötelemeler","Döndürmeler","Simetri","Yansıma"]},
+        {name:"Analitik Geometri (İleri)", subs:["Nokta-Doğru İlişkisi","Çemberin Denklemi","Elips","Hiperbol","Parabol"]}
+      ]
+    },
+    "Fizik": {
+      icon:"⚡", color:"color-fizik", bg:"bg-fizik",
+      topics:[
+        {name:"Hareket Kinematiği", subs:["Konum-Hız-İvme","Düzgün Hareket","DÜHB","Serbest Düşme","Eğik Atış","Dairesel Hareket"]},
+        {name:"Kuvvet ve Dinamik", subs:["Newton'un Yasaları","Sürtünme","Bağlı Cisimler","Eğimli Düzlem","Merkeze Doğru Kuvvet"]},
+        {name:"Enerji ve Momentum", subs:["İş-Güç-Enerji","Enerji Korunumu","İmpuls","Momentum","Çarpışmalar"]},
+        {name:"Dalgalar ve Optik", subs:["Mekanik Dalgalar","Ses Dalgaları","Elektromanyetik Dalgalar","Geometrik Optik","Işığın Kırılması","Mercekler","Aynalar"]},
+        {name:"Elektrik ve Manyetizma", subs:["Elektrostatik","Kondansatör","Ohm Yasası","Devre Analizi","Manyetik Alan","Elektromanyetik Endüksiyon","AC Devreler"]},
+        {name:"Basit Harmonik Hareket", subs:["Sarkaç","Yay-Kütle","Rezonans"]},
+        {name:"Termodinamik", subs:["Isı-Sıcaklık","Genleşme","Gazlar","Termodinamik Yasaları","Isı Makineleri"]},
+        {name:"Modern Fizik", subs:["Özel Görelilik","Fotoelektrik Etki","Compton","De Broglie","Bohr Modeli"]},
+        {name:"Atom ve Çekirdek Fiziği", subs:["Radyoaktivite","Yarılanma Ömrü","Çekirdek Tepkimeleri","Nükleer Enerji"]}
+      ]
+    },
+    "Kimya": {
+      icon:"🧪", color:"color-kimya", bg:"bg-kimya",
+      topics:[
+        {name:"Atom ve Periyodik Tablo", subs:["Atom Yapısı","Elektron Konfigürasyonu","Periyodik Özellikler","Kimyasal Bağlar"]},
+        {name:"Mol Kavramı", subs:["Avogadro Sayısı","Mol Hesaplamaları","Kimyasal Formüller","Yüzde Bileşim"]},
+        {name:"Kimyasal Tepkimeler", subs:["Denklem Denkleştirme","Stokiyometri","Sınırlayıcı Reaktif","Verim"]},
+        {name:"Gazlar", subs:["İdeal Gaz Yasası","Dalton","Graham","Gaz Stokiyometrisi"]},
+        {name:"Çözeltiler", subs:["Çözünürlük","Derişim","Koligatif Özellikler","Çökelme"]},
+        {name:"Termokimya", subs:["Entalpi","Hess Yasası","Bağ Enerjisi","Isı Hesaplamaları"]},
+        {name:"Kimyasal Denge", subs:["Denge Sabiti","Le Chatelier","Kc-Kp","Çözünürlük Dengesi"]},
+        {name:"Asit-Baz Dengesi", subs:["Brønsted-Lowry","Ka-Kb","pH Hesaplamaları","Buffer","Hidroliz","Titrasyon"]},
+        {name:"Elektrokimya", subs:["Redoks","Oksidasyon Basamağı","Elektrokimyasal Pil","Elektroliz"]},
+        {name:"Organik Kimya", subs:["Hidrokarbonlar","Alkol-Eter","Aldehit-Keton","Karboksilik Asitler","Esterler","Aminler","Polimer"]}
+      ]
+    },
+    "Biyoloji": {
+      icon:"🧬", color:"color-biyoloji", bg:"bg-biyoloji",
+      topics:[
+        {name:"Hücre Biyolojisi", subs:["Prokaryot-Ökaryot","Hücre Organelleri","Hücre Zarı","Madde Taşınması","Hücre Bölünmesi (Mitoz-Mayoz)"]},
+        {name:"Biyomoleküller", subs:["Karbonhidratlar","Lipidler","Proteinler","Nükleik Asitler","Enzimler"]},
+        {name:"Metabolizma", subs:["Fotosentez","Hücresel Solunum","Kemosentez","Fermantasyon"]},
+        {name:"Kalıtım", subs:["DNA Yapısı-Replikasyonu","Transkripsiyon-Translasyon","Mendel Kalıtımı","Bağlı Kalıtım","Mutasyon","Modifikasyon"]},
+        {name:"Evrim", subs:["Darwin Teorisi","Doğal Seçilim","Adaptasyon","Türleşme","Filogenetik"]},
+        {name:"İnsan Fizyolojisi", subs:["Sindirim","Dolaşım","Solunum","Boşaltım","Sinir Sistemi","Endokrin","Üreme","Bağışıklık"]},
+        {name:"Bitkiler", subs:["Bitki Dokuları","Su-Mineral Alımı","Fotosentez Detay","Büyüme-Gelişme","Bitki Hormonları"]},
+        {name:"Ekosistem", subs:["Ekosistem Bileşenleri","Enerji Akışı","Madde Döngüleri","Biyomlar","Çevre Sorunları"]},
+        {name:"Canlı Çeşitliliği", subs:["Virüsler","Bakteriler","Arke","Protistler","Mantarlar","Bitkiler Alemi","Hayvanlar Alemi"]}
+      ]
+    }
+  }
+};
+
+// Soru limitleri TYT
+const TYT_LIMITS = {
+  "Türkçe": 40, "Matematik": 40, "Fen Bilimleri": 20, "Sosyal Bilimler": 20
+};
+const AYT_LIMITS = {
+  "Matematik": 30, "Fizik": 14, "Kimya": 13, "Biyoloji": 13,
+  "Geometri": 10
+};
+
+// Motivasyon sözleri
+const QUOTES = [
+  {text:"Başarı, her gün tekrarlanan küçük çabaların toplamıdır.", author:"Robert Collier"},
+  {text:"Bugün yapabileceğini yarına bırakma. Yarın da yapabileceğin bir şey vardır.", author:"Benjamin Franklin"},
+  {text:"Zor çalışmanın yerine geçen hiçbir şey yoktur.", author:"Thomas Edison"},
+  {text:"Düşünebiliyorsanız ve düşündüklerinizi yazabiliyorsanız, her şeyi başarabilirsiniz.", author:"Rudyard Kipling"},
+  {text:"Başarıya giden yol, çalışma, azim ve başarısızlıktan ders çıkarmakla döşelidir.", author:"Unknown"},
+  {text:"Eğitim, hayatta kullanabileceğin tek şeydir.", author:"Aristoteles"},
+  {text:"Kendinize inanın. Sizi seven insanlara inanın. Hedeflerinize inanın.", author:"Unknown"},
+  {text:"Her gün daha iyi olmak için bir neden var. Bugün de bu fırsat önünde.", author:"Unknown"},
+  {text:"Başarı tesadüf değildir. Çalışmak, özveri, öğrenme, fedakarlık ve en önemlisi sevdiğin şeyi yapmaktır.", author:"Pelé"},
+  {text:"Engeller, hedeflerinizden gözlerinizi kaldırdığınızda ortaya çıkar.", author:"Henry Ford"},
+  {text:"Hayatta en gerçek yol gösterici ilimdir.", author:"Atatürk"},
+  {text:"Bir gün diyenler ile hemen başlayanlar arasındaki fark, aynı zamanda başarı ile başarısızlık arasındaki farktır.", author:"Unknown"},
+  {text:"Çalışmak sadece başarıya değil, kendine saygıya da götürür.", author:"Unknown"},
+  {text:"Bugün zor olan şey yarın sana güç verir.", author:"Unknown"},
+  {text:"YKS bir maraton, sprint değil. Her gün biraz koş.", author:"Unknown"}
+];
+
+// Üniversiteler listesi (Türkiye'deki tüm devlet ve vakıf üniversiteleri)
+const UNIVERSITIES = [
+  "Abant İzzet Baysal Üniversitesi","Abdullah Gül Üniversitesi","Adana Alparslan Türkeş Bilim ve Teknoloji Üniversitesi",
+  "Adıyaman Üniversitesi","Afyon Kocatepe Üniversitesi","Ağrı İbrahim Çeçen Üniversitesi","Akdeniz Üniversitesi",
+  "Aksaray Üniversitesi","Alanya Alaaddin Keykubat Üniversitesi","Amasya Üniversitesi","Anadolu Üniversitesi",
+  "Ankara Hacı Bayram Veli Üniversitesi","Ankara Medipol Üniversitesi","Ankara Müzik ve Güzel Sanatlar Üniversitesi",
+  "Ankara Sosyal Bilimler Üniversitesi","Ankara Üniversitesi","Ankara Yıldırım Beyazıt Üniversitesi",
+  "Ardahan Üniversitesi","Artvin Çoruh Üniversitesi","Atatürk Üniversitesi","Atılım Üniversitesi",
+  "Bahçeşehir Üniversitesi","Balıkesir Üniversitesi","Bandırma Onyedi Eylül Üniversitesi","Bartın Üniversitesi",
+  "Batman Üniversitesi","Bayburt Üniversitesi","Bezm-i Alem Vakıf Üniversitesi","Bilecik Şeyh Edebali Üniversitesi",
+  "Bingöl Üniversitesi","Bitlis Eren Üniversitesi","Boğaziçi Üniversitesi","Bolu Abant İzzet Baysal Üniversitesi",
+  "Bursa Teknik Üniversitesi","Bursa Uludağ Üniversitesi","Çanakkale Onsekiz Mart Üniversitesi",
+  "Çankırı Karatekin Üniversitesi","Cumhuriyet Üniversitesi","Çukurova Üniversitesi","Dicle Üniversitesi",
+  "Dokuz Eylül Üniversitesi","Düzce Üniversitesi","Ege Üniversitesi","Erciyes Üniversitesi",
+  "Erzincan Binali Yıldırım Üniversitesi","Erzurum Teknik Üniversitesi","Eskişehir Osmangazi Üniversitesi",
+  "Eskişehir Teknik Üniversitesi","Fırat Üniversitesi","Galatasaray Üniversitesi","Gaziantep İslam Bilim ve Teknoloji Üniversitesi",
+  "Gaziantep Üniversitesi","Gaziosmanpaşa Üniversitesi","Gebze Teknik Üniversitesi","Giresun Üniversitesi",
+  "Gümüşhane Üniversitesi","Hacettepe Üniversitesi","Hakkari Üniversitesi","Harran Üniversitesi",
+  "Hatay Mustafa Kemal Üniversitesi","Hitit Üniversitesi","Iğdır Üniversitesi","İnönü Üniversitesi",
+  "İskenderun Teknik Üniversitesi","İstanbul Medeniyet Üniversitesi","İstanbul Teknik Üniversitesi",
+  "İstanbul Üniversitesi","İstanbul Üniversitesi-Cerrahpaşa","İzmir Bakırçay Üniversitesi",
+  "İzmir Demokrasi Üniversitesi","İzmir Kâtip Çelebi Üniversitesi","İzmir Yüksek Teknoloji Enstitüsü",
+  "Kafkas Üniversitesi","Kahramanmaraş İstiklal Üniversitesi","Kahramanmaraş Sütçü İmam Üniversitesi",
+  "Karabük Üniversitesi","Karadeniz Teknik Üniversitesi","Karaman Mehmet Bey Üniversitesi",
+  "Kastamonu Üniversitesi","Kayseri Üniversitesi","Kırıkkale Üniversitesi","Kırklareli Üniversitesi",
+  "Kırşehir Ahi Evran Üniversitesi","Kilis 7 Aralık Üniversitesi","Koç Üniversitesi","Kocaeli Üniversitesi",
+  "Konya Teknik Üniversitesi","Kütahya Dumlupınar Üniversitesi","Kütahya Sağlık Bilimleri Üniversitesi",
+  "Malatya Turgut Özal Üniversitesi","Manisa Celal Bayar Üniversitesi","Mardin Artuklu Üniversitesi",
+  "Marmara Üniversitesi","Mersin Üniversitesi","Muğla Sıtkı Koçman Üniversitesi","Muş Alparslan Üniversitesi",
+  "Necmettin Erbakan Üniversitesi","Nevşehir Hacı Bektaş Veli Üniversitesi","Niğde Ömer Halisdemir Üniversitesi",
+  "Ondokuz Mayıs Üniversitesi","Ordu Üniversitesi","Orta Doğu Teknik Üniversitesi (ODTÜ)","Osmaniye Korkut Ata Üniversitesi",
+  "Pamukkale Üniversitesi","Recep Tayyip Erdoğan Üniversitesi","Sabancı Üniversitesi","Sakarya Üniversitesi",
+  "Samsun Üniversitesi","Selçuk Üniversitesi","Siirt Üniversitesi","Sinop Üniversitesi","Sivas Bilim ve Teknoloji Üniversitesi",
+  "Sivas Cumhuriyet Üniversitesi","Süleyman Demirel Üniversitesi","Şırnak Üniversitesi","Tokat Gaziosmanpaşa Üniversitesi",
+  "Trabzon Üniversitesi","Trakya Üniversitesi","Türk-Alman Üniversitesi","Uşak Üniversitesi","Van Yüzüncü Yıl Üniversitesi",
+  "Yalova Üniversitesi","Yıldız Teknik Üniversitesi","Yozgat Bozok Üniversitesi","Zonguldak Bülent Ecevit Üniversitesi",
+  "Bilkent Üniversitesi","TOBB ETÜ","TED Üniversitesi","MEF Üniversitesi","Özyeğin Üniversitesi",
+  "İstanbul Bilgi Üniversitesi","İstanbul Kültür Üniversitesi","İstanbul Aydın Üniversitesi","Beykent Üniversitesi",
+  "Maltepe Üniversitesi","Üsküdar Üniversitesi","Kadir Has Üniversitesi","Yeditepe Üniversitesi",
+  "Işık Üniversitesi","Doğuş Üniversitesi","Fatih Sultan Mehmet Vakıf Üniversitesi","İstanbul 29 Mayıs Üniversitesi"
+];
+
+// Bölümler (genel - üniversiteye göre filtreleme simüle edilir)
+const DEPARTMENTS = {
+  "Tıp": {score: "TYT+AYT-SAY", rank2025: "İTÜ yok / ODTÜ yok / Hacettepe ~500"},
+  "Diş Hekimliği": {score: "TYT+AYT-SAY", rank2025: "~5.000"},
+  "Eczacılık": {score: "TYT+AYT-SAY", rank2025: "~15.000"},
+  "Hukuk": {score: "TYT+AYT-SÖZ", rank2025: "~20.000 (İstanbul Üni.)"},
+  "Bilgisayar Mühendisliği": {score: "TYT+AYT-SAY", rank2025: "Değişken (ODTÜ ~1.000, diğerleri ~100.000'e kadar)"},
+  "Yazılım Mühendisliği": {score: "TYT+AYT-SAY", rank2025: "~10.000 – 200.000"},
+  "Elektrik-Elektronik Mühendisliği": {score: "TYT+AYT-SAY", rank2025: "~5.000 – 150.000"},
+  "Makine Mühendisliği": {score: "TYT+AYT-SAY", rank2025: "~10.000 – 200.000"},
+  "İnşaat Mühendisliği": {score: "TYT+AYT-SAY", rank2025: "~15.000 – 250.000"},
+  "Endüstri Mühendisliği": {score: "TYT+AYT-SAY", rank2025: "~5.000 – 200.000"},
+  "Mimarlık": {score: "TYT+AYT-SAY", rank2025: "~10.000 – 200.000"},
+  "İşletme": {score: "TYT+AYT-SAY/SÖZ/EA", rank2025: "~20.000 – 500.000"},
+  "İktisat / Ekonomi": {score: "TYT+AYT-EA", rank2025: "~15.000 – 400.000"},
+  "Psikoloji": {score: "TYT+AYT-SAY/SÖZ", rank2025: "~10.000 – 300.000"},
+  "Sosyoloji": {score: "TYT+AYT-SÖZ", rank2025: "~50.000 – 500.000"},
+  "Matematik": {score: "TYT+AYT-SAY", rank2025: "~30.000 – 400.000"},
+  "Fizik": {score: "TYT+AYT-SAY", rank2025: "~40.000 – 500.000"},
+  "Kimya": {score: "TYT+AYT-SAY", rank2025: "~40.000 – 500.000"},
+  "Biyoloji": {score: "TYT+AYT-SAY", rank2025: "~50.000 – 500.000"},
+  "Öğretmenlik (Matematik)": {score: "TYT+AYT-SAY", rank2025: "~10.000 – 200.000"},
+  "Öğretmenlik (Türkçe)": {score: "TYT+AYT-SÖZ", rank2025: "~10.000 – 200.000"},
+  "Öğretmenlik (Fen Bilgisi)": {score: "TYT+AYT-SAY", rank2025: "~20.000 – 300.000"},
+  "Hemşirelik": {score: "TYT+AYT-SAY", rank2025: "~30.000 – 500.000"},
+  "Fizyoterapi ve Rehabilitasyon": {score: "TYT+AYT-SAY", rank2025: "~20.000 – 400.000"},
+  "Veteriner": {score: "TYT+AYT-SAY", rank2025: "~15.000 – 200.000"},
+  "Uçak Mühendisliği": {score: "TYT+AYT-SAY", rank2025: "~5.000 – 80.000"},
+  "Havacılık": {score: "TYT+AYT-SAY", rank2025: "~10.000 – 150.000"},
+  "Gastronomi": {score: "TYT+AYT", rank2025: "~100.000 – 500.000"},
+  "İletişim / Medya": {score: "TYT+AYT-SÖZ", rank2025: "~30.000 – 400.000"},
+  "Uluslararası İlişkiler": {score: "TYT+AYT-SÖZ/EA", rank2025: "~15.000 – 300.000"},
+  "Siyaset Bilimi": {score: "TYT+AYT-SÖZ", rank2025: "~20.000 – 400.000"},
+  "Muhasebe / Finans": {score: "TYT+AYT-EA", rank2025: "~50.000 – 600.000"},
+  "Türk Dili ve Edebiyatı": {score: "TYT+AYT-SÖZ", rank2025: "~30.000 – 500.000"},
+  "Tarih": {score: "TYT+AYT-SÖZ", rank2025: "~30.000 – 500.000"},
+  "Coğrafya": {score: "TYT+AYT-SÖZ", rank2025: "~50.000 – 500.000"},
+  "Felsefe": {score: "TYT+AYT-SÖZ", rank2025: "~50.000 – 500.000"},
+  "Kamu Yönetimi": {score: "TYT+AYT-SÖZ/EA", rank2025: "~30.000 – 500.000"},
+  "Biyomedikal Mühendisliği": {score: "TYT+AYT-SAY", rank2025: "~20.000 – 300.000"},
+  "Genetik ve Biyomühendislik": {score: "TYT+AYT-SAY", rank2025: "~15.000 – 250.000"},
+  "Çevre Mühendisliği": {score: "TYT+AYT-SAY", rank2025: "~50.000 – 500.000"},
+  "Jeoloji Mühendisliği": {score: "TYT+AYT-SAY", rank2025: "~50.000 – 500.000"},
+  "Gıda Mühendisliği": {score: "TYT+AYT-SAY", rank2025: "~50.000 – 500.000"}
+};
+
+// ===================== STATE =====================
+let state = {
+  checkedTopics: JSON.parse(localStorage.getItem('checkedTopics')||'{}'),
+  denemeler: JSON.parse(localStorage.getItem('denemeler')||'[]'),
+  studyLogs: JSON.parse(localStorage.getItem('studyLogs')||'[]'),
+  goals: JSON.parse(localStorage.getItem('goals')||'[]'),
+  currentExam: 'TYT',
+  currentDenemeTab: 'TYT',
+  quoteIndex: 0
+};
+
+function save(key){ localStorage.setItem(key, JSON.stringify(state[key])); }
+
+// ===================== NAVIGATION =====================
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  event && event.currentTarget && event.currentTarget.classList.add('active');
+  // find nav item
+  document.querySelectorAll('.nav-item').forEach(n=>{
+    if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes(id)) n.classList.add('active');
+  });
+  if(id==='topics') renderTopics();
+  if(id==='deneme') renderDenemeForm();
+  if(id==='study') renderStudyPage();
+  if(id==='university') renderUniPage();
+  if(id==='dashboard') renderDashboard();
+  if(id==='motivation') renderMotivation();
+}
+
+// ===================== COUNTDOWN =====================
+function updateCountdown(){
+  const yks = new Date('2026-06-20T09:00:00');
+  const now = new Date();
+  const diff = yks - now;
+  if(diff<=0){ document.getElementById('cd-gun').textContent='0'; document.getElementById('cd-saat').textContent='0'; return; }
+  const days = Math.floor(diff/86400000);
+  const hours = Math.floor((diff%86400000)/3600000);
+  document.getElementById('cd-gun').textContent = days;
+  document.getElementById('cd-saat').textContent = hours;
+}
+setInterval(updateCountdown,60000);
+updateCountdown();
+
+// ===================== TOPICS =====================
+function switchExam(exam, el){
+  state.currentExam = exam;
+  document.querySelectorAll('#page-topics .exam-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderTopics();
+}
+
+function renderTopics(){
+  const tree = document.getElementById('topic-tree');
+  tree.innerHTML='';
+  const data = TOPICS[state.currentExam];
+  for(const [subj, info] of Object.entries(data)){
+    const key = state.currentExam+'-'+subj;
+    let done=0, total=0;
+    info.topics.forEach(t=>{ t.subs.forEach(s=>{ total++; if(state.checkedTopics[key+'-'+t.name+'-'+s]) done++; }); });
+    const pct = total>0?Math.round(done/total*100):0;
+    const folder = document.createElement('div');
+    folder.className='subject-folder';
+    folder.innerHTML=`
+      <div class="folder-header" onclick="toggleFolder(this)">
+        <span class="folder-icon">${info.icon}</span>
+        <span class="folder-name" style="color:${getColorHex(info.color)};">${subj}</span>
+        <span class="folder-stats">${done}/${total} konu</span>
+        <div style="width:80px;margin:0 12px;"><div class="progress-wrap"><div class="progress-bar" style="width:${pct}%;background:${getColorHex(info.color)};"></div></div></div>
+        <span style="font-size:12px;font-weight:700;color:${getColorHex(info.color)};">${pct}%</span>
+        <span class="folder-arrow">›</span>
+      </div>
+      <div class="folder-content">
+        ${info.topics.map(t=>`
+          <div style="margin-bottom:4px;padding:6px 0;border-bottom:1px solid rgba(42,42,62,.4);">
+            <div style="font-size:12px;font-weight:600;color:var(--muted);padding:4px 0;margin-bottom:4px;">${t.name}</div>
+            <div class="subtopics">
+              ${t.subs.map(s=>{
+                const ck = key+'-'+t.name+'-'+s;
+                const done = state.checkedTopics[ck];
+                return `<div class="topic-item">
+                  <div class="topic-check ${done?'done':''}" onclick="toggleTopic('${ck}',this)"></div>
+                  <span class="topic-name ${done?'done':''}">${s}</span>
+                </div>`;
+              }).join('')}
+            </div>
+          </div>
+        `).join('')}
+      </div>`;
+    tree.appendChild(folder);
+  }
+}
+
+function toggleFolder(el){
+  el.classList.toggle('open');
+  const content = el.nextElementSibling;
+  content.classList.toggle('open');
+}
+
+function toggleTopic(key, el){
+  state.checkedTopics[key] = !state.checkedTopics[key];
+  el.classList.toggle('done', state.checkedTopics[key]);
+  const nameEl = el.nextElementSibling;
+  nameEl.classList.toggle('done', state.checkedTopics[key]);
+  save('checkedTopics');
+  updateDashboardStats();
+}
+
+// ===================== DENEME =====================
+function switchDenemeTab(tab, el){
+  state.currentDenemeTab = tab;
+  document.querySelectorAll('#page-deneme .exam-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderDenemeForm();
+}
+
+function renderDenemeForm(){
+  const area = document.getElementById('deneme-form-area');
+  const subjects = state.currentDenemeTab==='TYT'
+    ? [
+        {name:'Türkçe', max:40, color:'color-turkce'},
+        {name:'Matematik', max:40, color:'color-matematik'},
+        {name:'Fen Bilimleri', max:20, color:'color-fen'},
+        {name:'Sosyal Bilimler', max:20, color:'color-sosyal'}
+      ]
+    : [
+        {name:'Matematik', max:30, color:'color-matematik'},
+        {name:'Geometri', max:10, color:'color-matematik'},
+        {name:'Fizik', max:14, color:'color-fizik'},
+        {name:'Kimya', max:13, color:'color-kimya'},
+        {name:'Biyoloji', max:13, color:'color-biyoloji'}
+      ];
+
+  area.innerHTML=`
+    <div class="deneme-form">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <input type="text" id="deneme-name" placeholder="Deneme adı (ör: Sofumert TYT #1)" style="flex:1;">
+        <input type="date" id="deneme-date" style="width:160px;" value="${new Date().toISOString().slice(0,10)}">
+      </div>
+      <div class="net-grid" id="net-inputs"></div>
+      <div style="display:flex;align-items:center;gap:16px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+        <div style="flex:1;"><span style="color:var(--muted);font-size:13px;">Toplam Net:</span> <span id="total-net-display" style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--accent);">0.00</span></div>
+        <button class="btn btn-primary" onclick="saveDeneme()">💾 Kaydet</button>
+      </div>
+    </div>`;
+
+  const netInputs = document.getElementById('net-inputs');
+  subjects.forEach(s=>{
+    const div = document.createElement('div');
+    div.className='net-card';
+    div.innerHTML=`
+      <div class="nc-title ${s.color}">${s.name} <span style="float:right;color:var(--muted)">/${s.max} soru</span></div>
+      <div class="net-row"><label>Doğru</label><input type="number" min="0" max="${s.max}" placeholder="0" id="d-${s.name}" oninput="calcNet('${s.name}',${s.max})"></div>
+      <div class="net-row"><label>Yanlış</label><input type="number" min="0" max="${s.max}" placeholder="0" id="y-${s.name}" oninput="calcNet('${s.name}',${s.max})"></div>
+      <div class="net-result">Net: <span id="net-${s.name}">0.00</span></div>`;
+    netInputs.appendChild(div);
+  });
+
+  renderDenemeHistory();
+}
+
+// Aktif deneme sekmesindeki ders listesini döndür
+function getDenemeSubjects(tab){
+  return tab==='TYT'
+    ? ['Türkçe','Matematik','Fen Bilimleri','Sosyal Bilimler']
+    : ['Matematik','Geometri','Fizik','Kimya','Biyoloji'];
+}
+
+function calcNet(subj, maxQ){
+  const dEl = document.getElementById('d-'+subj);
+  const yEl = document.getElementById('y-'+subj);
+  let d = parseFloat(dEl.value)||0;
+  let y = parseFloat(yEl.value)||0;
+  if(d>maxQ){ d=maxQ; dEl.value=maxQ; }
+  if(y>maxQ){ y=maxQ; yEl.value=maxQ; }
+  if(d+y>maxQ){ y=Math.max(0,maxQ-d); yEl.value=y; }
+  const net = d - y/4;
+  document.getElementById('net-'+subj).textContent = net.toFixed(2);
+  // Toplam: sadece mevcut sekmedeki dersler
+  let total=0;
+  getDenemeSubjects(state.currentDenemeTab).forEach(s=>{
+    const el=document.getElementById('net-'+s);
+    if(el) total+=parseFloat(el.textContent)||0;
+  });
+  const totalEl=document.getElementById('total-net-display');
+  if(totalEl) totalEl.textContent=total.toFixed(2);
+}
+
+function saveDeneme(){
+  const subjects = getDenemeSubjects(state.currentDenemeTab);
+  const nameEl = document.getElementById('deneme-name');
+  const dateEl = document.getElementById('deneme-date');
+  const name = (nameEl&&nameEl.value.trim()) ? nameEl.value.trim() : (state.currentDenemeTab+' Denemesi');
+  const date = dateEl ? dateEl.value : new Date().toISOString().slice(0,10);
+  const results={};
+  let total=0;
+  subjects.forEach(s=>{
+    const d=parseFloat(document.getElementById('d-'+s)?.value)||0;
+    const y=parseFloat(document.getElementById('y-'+s)?.value)||0;
+    const net=d - y/4;
+    results[s]={d,y,net};
+    total+=net;
+  });
+  const entry={id:Date.now(),name,date,type:state.currentDenemeTab,results,total};
+  state.denemeler.unshift(entry);
+  save('denemeler');
+  showToast('✅ Deneme kaydedildi!');
+  renderDenemeHistory();
+  updateDashboardStats();
+}
+
+function renderDenemeHistory(){
+  const area = document.getElementById('deneme-history-area');
+  const filtered = state.denemeler.filter(d=>d.type===state.currentDenemeTab);
+  if(!filtered.length){ area.innerHTML='<div class="empty-state"><div class="es-icon">📋</div><div>Henüz deneme kaydı yok</div></div>'; return; }
+  const subjects = getDenemeSubjects(state.currentDenemeTab);
+  area.innerHTML=`<div style="overflow-x:auto;"><table class="history-table">
+    <thead><tr><th>Tarih</th><th>Ad</th>${subjects.map(s=>`<th>${s.slice(0,4)}</th>`).join('')}<th>Toplam</th><th></th></tr></thead>
+    <tbody>${filtered.map(d=>`<tr>
+      <td>${d.date}</td><td>${d.name}</td>
+      ${subjects.map(s=>`<td style="color:var(--accent);">${(d.results[s]?.net||0).toFixed(1)}</td>`).join('')}
+      <td><strong style="color:var(--accent3);">${(d.total||0).toFixed(2)}</strong></td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteDeneme(${d.id})">Sil</button></td>
+    </tr>`).join('')}
+    </tbody></table></div>`;
+}
+
+function deleteDeneme(id){
+  state.denemeler = state.denemeler.filter(d=>d.id!==id);
+  save('denemeler');
+  renderDenemeHistory();
+  updateDashboardStats();
+}
+
+// ===================== ÇALIŞMA =====================
+let timerInterval=null, timerSeconds=0, timerRunning=false;
+
+function renderStudyPage(){
+  // fill subject select
+  const sel = document.getElementById('timer-subject');
+  sel.innerHTML='<option value="">-- Ders seçin --</option>';
+  const allSubjects = [
+    ...Object.keys(TOPICS.TYT).map(s=>'TYT - '+s),
+    ...Object.keys(TOPICS.AYT).map(s=>'AYT - '+s)
+  ];
+  allSubjects.forEach(s=>{
+    const o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o);
+  });
+  renderStudyLog();
+}
+
+function addStudyLog(){
+  const subj = document.getElementById('timer-subject').value;
+  const mins = parseInt(document.getElementById('manual-minutes').value||0);
+  const note = document.getElementById('study-note').value;
+  if(!subj){ showToast('⚠️ Ders seçin!'); return; }
+  if(!mins||mins<=0){ showToast('⚠️ Geçerli bir süre girin!'); return; }
+  const today = new Date().toISOString().slice(0,10);
+  state.studyLogs.push({id:Date.now(),date:today,subject:subj,minutes:mins,note});
+  save('studyLogs');
+  document.getElementById('manual-minutes').value='';
+  document.getElementById('study-note').value='';
+  showToast('✅ Çalışma kaydedildi!');
+  renderStudyLog();
+  updateDashboardStats();
+}
+
+function toggleTimer(){
+  if(!timerRunning){
+    timerRunning=true;
+    document.getElementById('timer-start-btn').textContent='⏸ Duraklat';
+    document.getElementById('timer-save-btn').style.display='inline-block';
+    timerInterval=setInterval(()=>{ timerSeconds++; updateTimerDisplay(); },1000);
+  } else {
+    timerRunning=false;
+    clearInterval(timerInterval);
+    document.getElementById('timer-start-btn').textContent='▶ Devam';
+  }
+}
+function resetTimer(){ clearInterval(timerInterval); timerRunning=false; timerSeconds=0; updateTimerDisplay(); document.getElementById('timer-start-btn').textContent='▶ Başlat'; document.getElementById('timer-save-btn').style.display='none'; }
+function updateTimerDisplay(){
+  const h=Math.floor(timerSeconds/3600), m=Math.floor(timerSeconds%3600/60), s=timerSeconds%60;
+  document.getElementById('timer-display').textContent=[h,m,s].map(x=>String(x).padStart(2,'0')).join(':');
+}
+function saveTimerLog(){
+  const subj = document.getElementById('timer-subject').value;
+  const note = document.getElementById('study-note').value;
+  if(!subj){ showToast('⚠️ Ders seçin!'); return; }
+  const mins = Math.max(1,Math.round(timerSeconds/60));
+  const today = new Date().toISOString().slice(0,10);
+  state.studyLogs.push({id:Date.now(),date:today,subject:subj,minutes:mins,note:note||'Kronometre ile ölçüldü'});
+  save('studyLogs');
+  showToast(`✅ ${mins} dakika kaydedildi!`);
+  resetTimer();
+  renderStudyLog();
+  updateDashboardStats();
+}
+
+function renderStudyLog(){
+  const today = new Date().toISOString().slice(0,10);
+  const todayLogs = state.studyLogs.filter(l=>l.date===today);
+  const totalMin = todayLogs.reduce((a,b)=>a+b.minutes,0);
+  document.getElementById('today-total').textContent = totalMin>=60 ? `${Math.floor(totalMin/60)} saat ${totalMin%60} dakika` : `${totalMin} dakika`;
+  const list = document.getElementById('study-log-list');
+  if(!todayLogs.length){ list.innerHTML='<li style="color:var(--muted);font-size:13px;">Bugün çalışma kaydı yok</li>'; }
+  else {
+    list.innerHTML = todayLogs.map(l=>{
+      const color = getSubjectColor(l.subject);
+      return `<li><div class="log-subject ${color}" style="min-width:80px;">${l.subject.split(' - ')[1]||l.subject}</div><div>${l.minutes} dk</div>${l.note?`<div style="color:var(--muted);font-size:12px;">${l.note}</div>`:''}<button onclick="deleteStudyLog(${l.id})" style="margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;">×</button></li>`;
+    }).join('');
+  }
+  // Weekly breakdown
+  const week={};
+  const weekStart = new Date(); weekStart.setDate(weekStart.getDate()-6);
+  state.studyLogs.filter(l=>new Date(l.date)>=weekStart).forEach(l=>{
+    const s=l.subject.split(' - ')[1]||l.subject;
+    week[s]=(week[s]||0)+l.minutes;
+  });
+  const wb=document.getElementById('weekly-breakdown');
+  if(!Object.keys(week).length){ wb.innerHTML='<div style="color:var(--muted);font-size:13px;">Bu hafta kayıt yok</div>'; return; }
+  const max=Math.max(...Object.values(week));
+  wb.innerHTML=Object.entries(week).sort((a,b)=>b[1]-a[1]).map(([s,m])=>`
+    <div style="margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>${s}</span><span style="color:var(--muted);">${m} dk</span></div>
+      <div class="progress-wrap"><div class="progress-bar" style="width:${Math.round(m/max*100)}%;background:var(--accent);"></div></div>
+    </div>`).join('');
+}
+
+function deleteStudyLog(id){
+  state.studyLogs=state.studyLogs.filter(l=>l.id!==id);
+  save('studyLogs');
+  renderStudyLog();
+  updateDashboardStats();
+}
+
+function getSubjectColor(subj){
+  if(subj.includes('Türkçe')||subj.includes('Edebiyat')) return 'bg-turkce';
+  if(subj.includes('Matematik')||subj.includes('Geometri')) return 'bg-matematik';
+  if(subj.includes('Fizik')) return 'bg-fizik';
+  if(subj.includes('Kimya')) return 'bg-kimya';
+  if(subj.includes('Biyoloji')) return 'bg-biyoloji';
+  if(subj.includes('Fen')) return 'bg-fen';
+  if(subj.includes('Sosyal')||subj.includes('Tarih')||subj.includes('Coğrafya')) return 'bg-sosyal';
+  return 'bg-matematik';
+}
+
+// ===================== ÜNİVERSİTE =====================
+let selectedUni = null;
+
+function renderUniPage(){
+  renderGoals();
+}
+
+function searchUni(val){
+  const sug=document.getElementById('uni-suggestions');
+  if(val.length<1){ sug.style.display='none'; return; }
+  const matches=UNIVERSITIES.filter(u=>u.toLowerCase().includes(val.toLowerCase())||u.toLowerCase().startsWith(val.toLowerCase())).slice(0,12);
+  if(!matches.length){ sug.style.display='none'; return; }
+  sug.style.display='block';
+  sug.innerHTML=matches.map(u=>`<div class="suggestion-item" onclick="selectUni('${u.replace(/'/g,"\\'")}')">${u}</div>`).join('');
+}
+
+function selectUni(name){
+  selectedUni=name;
+  document.getElementById('uni-search').value=name;
+  document.getElementById('uni-suggestions').style.display='none';
+  document.getElementById('selected-uni-display').innerHTML=`<div class="selected-uni"><div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:4px;">🎓 ${name}</div><div style="font-size:12px;color:var(--muted);">Aşağıdan bölüm seçin</div></div>`;
+  document.getElementById('dept-list').style.display='block';
+  renderDepts('');
+}
+
+function renderDepts(filter){
+  const area=document.getElementById('dept-items');
+  const deps=Object.entries(DEPARTMENTS).filter(([n])=>!filter||n.toLowerCase().includes(filter.toLowerCase()));
+  area.innerHTML=deps.map(([name,info])=>{
+    const isSelected=state.goals.some(g=>g.uni===selectedUni&&g.dept===name);
+    return `<div class="dept-item ${isSelected?'selected':''}" onclick="toggleGoal('${selectedUni.replace(/'/g,"\\'")}','${name.replace(/'/g,"\\'")}',this)">
+      <div><div style="font-weight:500;">${name}</div><div style="font-size:11px;color:var(--muted);">Puan: ${info.score}</div></div>
+      <div class="rank-badge">2025: ${info.rank2025}</div>
+    </div>`;
+  }).join('');
+}
+
+function filterDepts(val){ renderDepts(val); }
+
+function toggleGoal(uni,dept,el){
+  const idx=state.goals.findIndex(g=>g.uni===uni&&g.dept===dept);
+  if(idx>=0){ state.goals.splice(idx,1); el.classList.remove('selected'); }
+  else { state.goals.push({uni,dept,rank:DEPARTMENTS[dept]?.rank2025||'?',score:DEPARTMENTS[dept]?.score||'?'}); el.classList.add('selected'); }
+  save('goals');
+  renderGoals();
+  updateDashboardStats();
+}
+
+function renderGoals(){
+  const list=document.getElementById('goals-list');
+  if(!state.goals.length){ list.innerHTML='<div class="empty-state"><div class="es-icon">🎯</div><div>Henüz hedef eklenmedi</div></div>'; return; }
+  list.innerHTML=state.goals.map(g=>`
+    <div class="goal-display">
+      <div style="display:flex;justify-content:space-between;align-items:start;">
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px;">🏛️ ${g.uni}</div>
+          <div style="font-size:14px;color:var(--accent);">📋 ${g.dept}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px;">Puan Türü: ${g.score}</div>
+          <div style="font-size:12px;color:var(--accent3);margin-top:2px;">2025 Taban Sıralama: ${g.rank}</div>
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="removeGoal('${g.uni.replace(/'/g,"\\'")}','${g.dept.replace(/'/g,"\\'")}')">Sil</button>
+      </div>
+    </div>`).join('');
+}
+
+function removeGoal(uni,dept){
+  state.goals=state.goals.filter(g=>!(g.uni===uni&&g.dept===dept));
+  save('goals');
+  renderGoals();
+  if(selectedUni===uni) renderDepts(document.getElementById('dept-filter').value||'');
+  updateDashboardStats();
+}
+
+// ===================== MOTİVASYON =====================
+function renderMotivation(){
+  showQuote(state.quoteIndex);
+  renderProgressChart();
+}
+function showQuote(i){
+  const q=QUOTES[i%QUOTES.length];
+  document.getElementById('quote-text').textContent='"'+q.text+'"';
+  document.getElementById('quote-author').textContent='— '+q.author;
+}
+function nextQuote(){ state.quoteIndex=(state.quoteIndex+1)%QUOTES.length; showQuote(state.quoteIndex); }
+
+function renderProgressChart(){
+  const area=document.getElementById('progress-chart');
+  // konu ilerlemesi per subject
+  const bars=[];
+  for(const [exam, subjects] of Object.entries(TOPICS)){
+    for(const [subj, info] of Object.entries(subjects)){
+      const key=exam+'-'+subj;
+      let done=0,total=0;
+      info.topics.forEach(t=>t.subs.forEach(s=>{ total++; if(state.checkedTopics[key+'-'+t.name+'-'+s]) done++; }));
+      bars.push({label:(exam==='AYT'?'AYT ':'')+subj.slice(0,7),pct:total?Math.round(done/total*100):0,color:info.color});
+    }
+  }
+  area.innerHTML=bars.map(b=>{
+    const hex=getColorHex(b.color);
+    return `<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+      <div style="width:90px;font-size:12px;color:var(--muted);text-align:right;">${b.label}</div>
+      <div style="flex:1;"><div class="progress-wrap"><div class="progress-bar" style="width:${b.pct}%;background:${hex};"></div></div></div>
+      <div style="width:36px;font-size:12px;font-weight:600;color:${hex};">${b.pct}%</div>
+    </div>`;
+  }).join('');
+}
+
+// ===================== DASHBOARD =====================
+function updateDashboardStats(){
+  let done=0,total=0;
+  for(const [exam,subjects] of Object.entries(TOPICS)){
+    for(const [subj,info] of Object.entries(subjects)){
+      const key=exam+'-'+subj;
+      info.topics.forEach(t=>t.subs.forEach(s=>{ total++; if(state.checkedTopics[key+'-'+t.name+'-'+s]) done++; }));
+    }
+  }
+  document.getElementById('dash-done-topics').textContent=done;
+  document.getElementById('dash-total-topics').textContent=total;
+  const today=new Date().toISOString().slice(0,10);
+  const todayMin=state.studyLogs.filter(l=>l.date===today).reduce((a,b)=>a+b.minutes,0);
+  document.getElementById('dash-today-study').textContent=todayMin+'dk';
+  document.getElementById('dash-today-date').textContent=new Date().toLocaleDateString('tr-TR');
+  const lastTyt=state.denemeler.find(d=>d.type==='TYT');
+  document.getElementById('dash-last-tyt').textContent=lastTyt?lastTyt.total.toFixed(1):'--';
+}
+
+function renderDashboard(){
+  updateDashboardStats();
+  // progress bars
+  const pb=document.getElementById('progress-bars');
+  pb.innerHTML='';
+  for(const [exam,subjects] of Object.entries(TOPICS)){
+    for(const [subj,info] of Object.entries(subjects)){
+      const key=exam+'-'+subj;
+      let done=0,total=0;
+      info.topics.forEach(t=>t.subs.forEach(s=>{ total++; if(state.checkedTopics[key+'-'+t.name+'-'+s]) done++; }));
+      const pct=total?Math.round(done/total*100):0;
+      const barColor = getColorHex(info.color);
+      pb.innerHTML+=`<div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="color:${barColor};font-weight:600;">${exam==='AYT'?'AYT ':''} ${subj}</span><span style="color:var(--muted);">${done}/${total}</span></div><div class="progress-wrap"><div class="progress-bar" style="width:${pct}%;background:${barColor};"></div></div></div>`;
+    }
+  }
+  // goal
+  const gd=document.getElementById('dash-goal-display');
+  if(state.goals.length){
+    const g=state.goals[0];
+    gd.innerHTML=`<div class="goal-display"><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px;">🏛️ ${g.uni}</div><div style="font-size:14px;color:var(--accent);">📋 ${g.dept}</div><div style="font-size:12px;color:var(--accent3);margin-top:4px;">2025 Taban: ${g.rank}</div></div>${state.goals.length>1?`<div style="font-size:12px;color:var(--muted);margin-top:8px;">+${state.goals.length-1} hedef daha</div>`:''}`;
+  }
+  // recent exams
+  const re=document.getElementById('dash-recent-exams');
+  if(state.denemeler.length){
+    re.innerHTML=`<table class="history-table"><thead><tr><th>Tarih</th><th>Ad</th><th>Tür</th><th>Toplam Net</th></tr></thead><tbody>${state.denemeler.slice(0,5).map(d=>`<tr><td>${d.date}</td><td>${d.name}</td><td><span class="badge badge-purple">${d.type}</span></td><td><strong style="color:var(--accent3);">${d.total.toFixed(2)}</strong></td></tr>`).join('')}</tbody></table>`;
+  }
+}
+
+// ===================== TOAST =====================
+function showToast(msg){
+  const t=document.createElement('div');
+  t.className='toast'; t.innerHTML=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),3000);
+}
+
+// ===================== COLOR HELPER =====================
+function getColorHex(colorClass){
+  const map={
+    'color-matematik':'#7c6af7','color-turkce':'#f76a8a','color-fen':'#6af7c8',
+    'color-sosyal':'#fbbf24','color-fizik':'#60a5fa','color-kimya':'#a78bfa','color-biyoloji':'#34d399'
+  };
+  return map[colorClass]||'#7c6af7';
+}
+
+// ===================== SIDEBAR TOGGLE =====================
+function toggleSidebar(){
+  const sb=document.getElementById('sidebar');
+  const ov=document.getElementById('sidebar-overlay');
+  sb.classList.toggle('open');
+  ov.classList.toggle('open');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+}
+
+// ===================== INIT =====================
+document.addEventListener('DOMContentLoaded',function(){
+  var btn=document.getElementById('menu-toggle');
+  if(btn) btn.onclick=toggleSidebar;
+  var ov=document.getElementById('sidebar-overlay');
+  if(ov) ov.onclick=closeSidebar;
+  document.querySelectorAll('.nav-item').forEach(function(el){
+    el.addEventListener('click',function(){ if(window.innerWidth<=768) closeSidebar(); });
+  });
+  renderDashboard();
+  showQuote(0);
+});
+</script>
+</body>
+</html>
